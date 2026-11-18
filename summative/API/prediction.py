@@ -108,7 +108,7 @@ app.add_middleware(
 # ---------------------------------------------------------------- model + data in memory
 _lock = threading.Lock()
 MODEL = joblib.load(MODEL_PATH)                 # loaded from the repository at startup
-TRAIN_DF = pd.read_csv(TRAIN_DATA_PATH)         # the original training rows, used by /retrain
+TRAIN_DF = getattr(MODEL, "training_rows_", pd.DataFrame(columns=FEATURES + [TARGET]))
 
 
 def _model_name(model) -> str:

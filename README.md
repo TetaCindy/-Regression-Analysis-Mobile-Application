@@ -1,121 +1,86 @@
-# Garment Worker Productivity Prediction
+# Hospital Visit Time Predictor
 
-- **Mission:** Help workers in target-driven jobs through fair, evidence-based daily targets.
-- **Problem:** Targets set without evidence push teams into overtime and burnout.
-- **Solution:** A regression model predicts team productivity, served by an API and a mobile app.
-- **Users:** Supervisors who check whether a target is realistic before a shift.
+## 1. Mission and problem
 
-## Dataset
+> DRAFT: rewrite these lines in your own words (4 lines maximum).
 
-*Productivity Prediction of Garment Employees*, UCI Machine Learning Repository (CC BY 4.0):
-https://archive.ics.uci.edu/dataset/597/productivity+prediction+of+garment+employees
+My mission is a single system that links hospitals, so a patient booking a visit is told roughly how long it will take instead of waiting all day without knowing.
+This project predicts the **total time a patient spends in the emergency department** (arrival to leaving, in minutes) from details known on arrival.
+Patients and front-desk staff can use it to plan their day and manage crowding.
 
-It holds 1,197 records of daily team production data from a garment factory (January to March 2015) with 14 features, both categorical (department, day, quarter, team) and numeric (targeted productivity, standard minute value, work in progress, overtime, incentive, idle time, idle workers, style changes, number of workers).
-The target is `actual_productivity`, a continuous value between 0 and 1.
+## 2. Dataset
 
-## Public API (Swagger UI)
+**NHAMCS 2022 Emergency Department public use file**, from the US CDC / National Center for Health Statistics.
+Link: https://www.cdc.gov/nchs/nhamcs/about/index.html (download: https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/NHAMCS/ , file `ed2022.zip`).
+It holds 16,025 real visit records sampled from US hospital emergency departments. `summative/linear_regression/make_dataset.py` converts the CDC fixed-width file into `ed_visits.csv` (8,488 visits where every needed answer is known and the stay was 24 hours or less).
+The data is US emergency-department data used as a stand-in for the visit-time problem; it is not African hospital data.
+
+## 3. Public API (Swagger UI)
 
 https://YOUR-SERVICE.onrender.com/docs
 
-The service runs on Render's free plan. It sleeps after 15 minutes without traffic, so the first request can take up to a minute.
+(Free Render plan: the first request after 15 minutes of silence can take up to a minute.)
 
-## Video demo
+## 4. Video demo
 
-https://www.youtube.com/watch?v=YOUR_VIDEO_ID
+YOUR YOUTUBE LINK
 
-## Run the mobile app
+## 5. Run the mobile app
 
-Requirements: the [Flutter SDK](https://docs.flutter.dev/get-started/install) and an Android emulator, an iOS simulator or a phone. The app does not run as a web app.
+You need Flutter installed (`flutter doctor` shows no errors) and an Android emulator or a phone.
 
-1. Clone the repository and open the app folder:
-   ```bash
-   git clone https://github.com/TetaCindy/-Regression-Analysis-Mobile-Application.git
-   cd linear_regression_model/summative/FlutterApp
+1. Open a terminal in `summative/FlutterApp`.
+2. Generate the Android/iOS folders (this repo only contains the app code):
    ```
-2. Generate the platform folders. This keeps the existing `lib/main.dart` and `pubspec.yaml`:
-   ```bash
-   flutter create --project-name garment_productivity_app .
-   ```
-3. Install the packages:
-   ```bash
+   flutter create --project-name hospital_visit_time .
    flutter pub get
    ```
-4. Android only: in `android/app/src/main/AndroidManifest.xml`, add this line inside the `<manifest>` tag:
-   ```xml
+   If `test/widget_test.dart` was created, delete it.
+3. Allow internet access. In `android/app/src/main/AndroidManifest.xml`, add this line directly under the `<manifest ...>` line:
+   ```
    <uses-permission android:name="android.permission.INTERNET"/>
    ```
-5. Check that `apiBaseUrl` in `lib/main.dart` is the public API address from the section above.
-6. Start an emulator or connect a phone, then run:
-   ```bash
+4. Put your Render address in `lib/main.dart` (`defaultValue` of `apiBaseUrl`), or pass it when you run.
+5. Start an emulator (Android Studio, Device Manager) or plug in a phone, then:
+   ```
    flutter devices
    flutter run
    ```
-7. Fill in all 11 fields and press **Predict**. The predicted productivity appears under the button. An empty field, text in a number field or an out-of-range value shows an error message in the same place.
+   To test against the API running on your own computer (Android emulator only):
+   ```
+   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+   ```
+   For that local test only, also add `android:usesCleartextTraffic="true"` inside the `<application` tag of the manifest, and remove it afterwards.
 
-To use an API running on your own computer from the Android emulator, add `android:usesCleartextTraffic="true"` to the `<application>` tag and run:
-```bash
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
-```
+How to use the app: type the age and arrival hour, tap the other six fields to choose a value, then tap **Predict**. A missing, non-whole-number or out-of-range value shows the API's error message in the result box.
 
-## API inputs
+---
 
-`POST /predict` takes these 11 fields. Types and ranges are enforced with Pydantic, and any other value returns a validation error instead of a prediction.
-
-| Field | Type | Allowed values |
-|---|---|---|
-| `department` | text | `sewing`, `finishing` |
-| `day` | text | `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Saturday`, `Sunday` |
-| `team` | integer | 1 to 12 |
-| `targeted_productivity` | float | 0 to 1 |
-| `smv` | float | 0 to 100 |
-| `over_time` | integer | 0 to 30000 |
-| `incentive` | integer | 0 to 5000 |
-| `idle_time` | float | 0 to 500 |
-| `idle_men` | integer | 0 to 100 |
-| `no_of_style_change` | integer | 0 to 5 |
-| `no_of_workers` | float | 1 to 100 |
-
-`POST /retrain` takes a CSV file with the same columns as the training data plus `actual_productivity`. The upload triggers retraining immediately and `/predict` uses the updated model without a redeploy. A model retrained on Render is kept in memory only, so it is lost when the free service restarts.
-
-## Repository layout
+## Project layout
 
 ```
 linear_regression_model/
 ├── README.md
 └── summative/
-    ├── pyproject.toml
-    ├── uv.lock
-    ├── linear_regression/
-    │   └── multivariate.ipynb      # exploration, four models, comparison, saving the best
-    ├── API/
-    │   ├── prediction.py           # FastAPI app: /predict, /retrain, /docs
-    │   ├── requirements.txt        # used by Render
-    │   └── best_model.pkl          # saved pipeline created by the notebook
-    └── FlutterApp/                 # one-page mobile app
+    ├── pyproject.toml, uv.lock, .python-version
+    ├── linear_regression/   multivariate.ipynb, ed_visits.csv, make_dataset.py, new_visits_sample.csv
+    ├── API/                 prediction.py, requirements.txt, best_model.pkl, training_data.csv
+    └── FlutterApp/          lib/main.dart, pubspec.yaml
 ```
+`training_data.csv` holds the rows the model was trained on; `/retrain` needs them to refit models other than SGDRegressor.
 
-## Run the notebook and the API locally
+## Run the notebook and the API
 
-```bash
+```
 cd summative
 uv sync
-uv run jupyter lab
+cd linear_regression
+uv run jupyter lab          # open multivariate.ipynb and run all cells (writes ../API/best_model.pkl)
+cd ../API
+uv run uvicorn prediction:app --reload     # http://127.0.0.1:8000/docs
 ```
-
-Place `garments_worker_productivity.csv` (downloaded from the dataset link) next to the notebook and run all cells. The notebook saves the model to `API/best_model.pkl`. To start the API:
-
-```bash
-cd API
-uv run uvicorn prediction:app --reload
-```
-
-The Swagger UI is then at http://127.0.0.1:8000/docs.
 
 ## Deploy on Render
 
-- Root directory: `summative/API`
-- Build command: `pip install -r requirements.txt`
-- Start command: `uvicorn prediction:app --host 0.0.0.0 --port $PORT`
-- Environment variable: `PYTHON_VERSION` = `3.12.3`
-- `requirements.txt` is exported from `summative/` with:
-  `uv export --format requirements.txt --no-hashes --no-dev -o API/requirements.txt`
+Web service from this GitHub repo. Root directory `summative/API`, build command `pip install -r requirements.txt`, start command `uvicorn prediction:app --host 0.0.0.0 --port $PORT`, environment variable `PYTHON_VERSION` = `3.12.3`.
+`requirements.txt` was exported with `uv export --format requirements.txt --no-hashes --no-dev -o API/requirements.txt`.

@@ -1,10 +1,10 @@
-# Python / uv
 .venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-
-# OS / editor
-.DS_Store
-.idea/
-.vscode/
+# raw CDC file (38 MB, not needed in the repo)
+ed2022
+ed2022.zip
+# Flutter build output (flutter create also writes its own .gitignore in FlutterApp)
+summative/FlutterApp/build/
+summative/FlutterApp/.dart_tool/

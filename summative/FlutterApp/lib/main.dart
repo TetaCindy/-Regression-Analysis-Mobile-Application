@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 ///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
 const String apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'https://YOUR-SERVICE.onrender.com',
+  defaultValue: 'https://er-visit-time-api.onrender.com',
 );
 
 void main() => runApp(const VisitTimeApp());

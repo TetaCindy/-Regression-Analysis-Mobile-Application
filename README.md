@@ -15,7 +15,7 @@ The data is US emergency-department data used as a stand-in for the visit-time p
 
 ## 3. Public API (Swagger UI)
 
-https://YOUR-SERVICE.onrender.com/docs
+https://er-visit-time-api.onrender.com/docs
 
 (Free Render plan: the first request after 15 minutes of silence can take up to a minute.)
 

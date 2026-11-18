@@ -2,11 +2,9 @@
 
 ## 1. Mission and problem
 
-> DRAFT: rewrite these lines in your own words (4 lines maximum).
-
-My mission is a single system that links hospitals, so a patient booking a visit is told roughly how long it will take instead of waiting all day without knowing.
-This project predicts the **total time a patient spends in the emergency department** (arrival to leaving, in minutes) from details known on arrival.
-Patients and front-desk staff can use it to plan their day and manage crowding.
+My mission is to help hospitals in Rwanda work better for patients, so nobody has to wait all day without knowing what is going on.
+This project predicts how long a patient will spend in the emergency department, from arrival to leaving, using details known when they arrive.
+A patient or a front-desk nurse can use the estimate to plan the day and prepare for busy times.
 
 ## 2. Dataset
 
@@ -30,18 +28,13 @@ YOUR YOUTUBE LINK
 You need Flutter installed (`flutter doctor` shows no errors) and an Android emulator or a phone.
 
 1. Open a terminal in `summative/FlutterApp`.
-2. Generate the Android/iOS folders (this repo only contains the app code):
+2. Install the packages:
    ```
-   flutter create --project-name hospital_visit_time .
    flutter pub get
    ```
-   If `test/widget_test.dart` was created, delete it.
-3. Allow internet access. In `android/app/src/main/AndroidManifest.xml`, add this line directly under the `<manifest ...>` line:
-   ```
-   <uses-permission android:name="android.permission.INTERNET"/>
-   ```
-4. Put your Render address in `lib/main.dart` (`defaultValue` of `apiBaseUrl`), or pass it when you run.
-5. Start an emulator (Android Studio, Device Manager) or plug in a phone, then:
+   The Android, iOS and web folders are already in the repo, and the internet permission is already in `android/app/src/main/AndroidManifest.xml`.
+3. The app calls the deployed API. The address is set in `lib/main.dart` (`defaultValue` of `apiBaseUrl`); you can also pass it when you run.
+4. Start an emulator (Android Studio, Device Manager) or plug in a phone, then:
    ```
    flutter devices
    flutter run
@@ -50,7 +43,7 @@ You need Flutter installed (`flutter doctor` shows no errors) and an Android emu
    ```
    flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
    ```
-   For that local test only, also add `android:usesCleartextTraffic="true"` inside the `<application` tag of the manifest, and remove it afterwards.
+   That local test needs `android:usesCleartextTraffic="true"` inside the `<application` tag of the manifest. Remove it again for the final version that talks to Render.
 
 How to use the app: type the age and arrival hour, tap the other six fields to choose a value, then tap **Predict**. A missing, non-whole-number or out-of-range value shows the API's error message in the result box.
 
@@ -62,12 +55,18 @@ How to use the app: type the age and arrival hour, tap the other six fields to c
 linear_regression_model/
 ├── README.md
 └── summative/
-    ├── pyproject.toml, uv.lock, .python-version
-    ├── linear_regression/   multivariate.ipynb, ed_visits.csv, make_dataset.py, new_visits_sample.csv
-    ├── API/                 prediction.py, requirements.txt, best_model.pkl, training_data.csv
-    └── FlutterApp/          lib/main.dart, pubspec.yaml
+    ├── pyproject.toml
+    ├── uv.lock
+    ├── linear_regression/
+    │   ├── multivariate.ipynb
+    │   ├── ed_visits.csv         (the cleaned dataset)
+    │   └── make_dataset.py       (how ed_visits.csv was made from the CDC file)
+    ├── API/
+    │   ├── prediction.py
+    │   ├── requirements.txt
+    │   └── best_model.pkl        (the saved pipeline; it also carries the training rows that /retrain needs)
+    └── FlutterApp/               (lib/main.dart, pubspec.yaml and the Android/iOS/web folders)
 ```
-`training_data.csv` holds the rows the model was trained on; `/retrain` needs them to refit models other than SGDRegressor.
 
 ## Run the notebook and the API
 
@@ -83,4 +82,4 @@ uv run uvicorn prediction:app --reload     # http://127.0.0.1:8000/docs
 ## Deploy on Render
 
 Web service from this GitHub repo. Root directory `summative/API`, build command `pip install -r requirements.txt`, start command `uvicorn prediction:app --host 0.0.0.0 --port $PORT`, environment variable `PYTHON_VERSION` = `3.12.3`.
-`requirements.txt` was exported with `uv export --format requirements.txt --no-hashes --no-dev -o API/requirements.txt`.
+`requirements.txt` was exported with `uv export --format requirements.txt --no-hashes --no-dev -o API/requirements.txt` (run from `summative`).

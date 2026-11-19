@@ -64,7 +64,7 @@ linear_regression_model/
     ├── API/
     │   ├── prediction.py
     │   ├── requirements.txt
-    │   └── best_model.pkl        (the saved pipeline; it also carries the training rows that /retrain needs)
+    │   └── best_model.pkl        
     └── FlutterApp/               (lib/main.dart, pubspec.yaml and the Android/iOS/web folders)
 ```
 

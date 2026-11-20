@@ -21,7 +21,7 @@ https://er-visit-time-api.onrender.com/docs
 
 ## 4. Video demo
 
-YOUR YOUTUBE LINK
+https://youtu.be/Pdp8r7cAUXU
 
 ## 5. Run the mobile app
 
